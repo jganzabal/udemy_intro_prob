@@ -30,6 +30,7 @@ def plot_joint_3d(conjunta_dict, bins_width = 1, az=50, el=-5):
     ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color='b')
     ax.view_init(az, el)
     plt.show()
+    return conjunta_H
 
 def plot_joint_hists_dicts(conjunta_dict):
     conj_array = np.array([[p,a] for p,a in conjunta_dict.keys()])
@@ -95,4 +96,56 @@ def plot_joint_hists(conjunta_H, frec_alt_H, frec_pesos_H):
     #axScatter.set_xlim(np.array(axHistx.get_xlim())-144.96)
     #axHisty.set_ylim(axScatter.get_ylim())
 
+    plt.show()
+   
+from matplotlib import cm
+from mpl_toolkits.mplot3d import Axes3D
+    
+def multivariate_gaussian(pos, mu, Sigma):
+    """Return the multivariate Gaussian distribution on array pos.
+
+    pos is an array constructed by packing the meshed arrays of variables
+    x_1, x_2, x_3, ..., x_k into its _last_ dimension.
+
+    """
+
+    n = mu.shape[0]
+    Sigma_det = np.linalg.det(Sigma)
+    Sigma_inv = np.linalg.inv(Sigma)
+    N = np.sqrt((2*np.pi)**n * Sigma_det)
+    # This einsum call calculates (x-mu)T.Sigma-1.(x-mu) in a vectorized
+    # way across all the input variables.
+    fac = np.einsum('...k,kl,...l->...', pos-mu, Sigma_inv, pos-mu)
+
+    return np.exp(-fac / 2) / N
+
+def plot_mv_gaussian(mu, Sigma, N = 200):
+    # Our 2-dimensional distribution will be over variables X and Y
+    std1 = np.sqrt(Sigma[0,0])
+    std2 = np.sqrt(Sigma[0,0])
+    X = np.linspace(-2*std1 + mu[0], 2*std1 + mu[0], N)
+    Y = np.linspace(-2*std2 + mu[1], 2*std2 + mu[1], N)
+    X, Y = np.meshgrid(X, Y)
+
+    # Pack X and Y into a single 3-dimensional array
+    pos = np.empty(X.shape + (2,))
+    pos[:, :, 0] = X
+    pos[:, :, 1] = Y
+
+    # The distribution on the variables X, Y packed into pos.
+    Z = multivariate_gaussian(pos, mu, Sigma)
+
+    # Create a surface plot and projected filled contour plot under it.
+    fig = plt.figure(figsize=(20,10))
+    ax = fig.gca(projection='3d')
+    ax.plot_surface(X, Y, Z, rstride=3, cstride=3, linewidth=1, antialiased=True,
+                    cmap=cm.viridis)
+
+    count_offseet = - np.max(Z)
+    cset = ax.contourf(X, Y, Z, zdir='z', offset=count_offseet, cmap=cm.viridis)
+
+    # Adjust the limits, ticks and view angle
+    ax.set_zlim(count_offseet,-count_offseet)
+    #ax.set_zticks(np.linspace(0,0.2,5))
+    ax.view_init(25, -21)
     plt.show()

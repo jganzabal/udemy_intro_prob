@@ -13,6 +13,7 @@ def plot_normalized_histogram(data):
 
 def plot_normalized_histogram_sorted(data):
     # Grafica y devuleve histograma
+    plt.figure(figsize=(20,6))
     frecuencia = Counter(data)
     espacio_muestral = list(frecuencia.keys())
     probabilidades_ = np.array(list(frecuencia.values()))/len(data)

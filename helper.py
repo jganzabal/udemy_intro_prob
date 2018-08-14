@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import NullFormatter
 from mpl_toolkits.mplot3d import Axes3D
 
-def plot_joint_3d(conjunta_dict, bins_width = 1, az=50, el=-5):
-    conj_array = np.array([[p,a] for p,a in conjunta_dict.keys()])
-    p_max, a_max = np.max(conj_array, axis=0)
-    p_min, a_min = np.min(conj_array, axis=0)
+def plot_joint_3d(conjunta_dict, bins_width = 1, az=50, el=-5, ax=None, p_max=None, a_max=None, p_min=None, a_min=None, color='b'):
+    if p_max is None:
+        conj_array = np.array([[p,a] for p,a in conjunta_dict.keys()])
+        p_max, a_max = np.max(conj_array, axis=0)
+        p_min, a_min = np.min(conj_array, axis=0)
     espacio_muestral_pesos = np.linspace(p_min, p_max, p_max - p_min + 1)
     espacio_muestral_alturas = np.linspace(a_min, a_max, a_max - a_min + 1)
     xpos, ypos = np.meshgrid(espacio_muestral_pesos, espacio_muestral_alturas)
@@ -25,11 +26,13 @@ def plot_joint_3d(conjunta_dict, bins_width = 1, az=50, el=-5):
         conjunta_H[p - p_min, a - a_min] = f
         
     dz = conjunta_H.astype(int).flatten()
-    fig = plt.figure(figsize=(20,20))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color='b')
+    if ax == None:
+        fig = plt.figure(figsize=(20,20))
+        ax = fig.add_subplot(111, projection='3d')
+    ax.bar3d(xpos, ypos, zpos, dx, dy, dz, color=color, alpha=0.5)
     ax.view_init(az, el)
-    plt.show()
+    if ax == None:
+        plt.show()
     return conjunta_H
 
 def plot_joint_hists_dicts(conjunta_dict):
@@ -122,7 +125,7 @@ def multivariate_gaussian(pos, mu, Sigma):
 def plot_mv_gaussian(mu, Sigma, N = 200):
     # Our 2-dimensional distribution will be over variables X and Y
     std1 = np.sqrt(Sigma[0,0])
-    std2 = np.sqrt(Sigma[0,0])
+    std2 = np.sqrt(Sigma[1,1])
     X = np.linspace(-2*std1 + mu[0], 2*std1 + mu[0], N)
     Y = np.linspace(-2*std2 + mu[1], 2*std2 + mu[1], N)
     X, Y = np.meshgrid(X, Y)

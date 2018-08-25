@@ -2,6 +2,21 @@ import numpy as np
 from collections import Counter
 from matplotlib import pyplot as plt
 
+def get_class_prob_naive(x_data, y_data, joint_class_1, joint_class_2, likelihood_indep_class_1, likelihood_indep_class_2):
+    prior_class_1 = joint_class_1.N/ (joint_class_1.N + joint_class_2.N)
+    prior_class_2 = joint_class_2.N/ (joint_class_1.N + joint_class_2.N)
+    likelihood_class_1 = likelihood_indep_class_1[joint_class_1.data_to_index(x_data, y_data)] 
+    likelihood_class_2 = likelihood_indep_class_2[joint_class_2.data_to_index(x_data, y_data)]
+    total = likelihood_class_1*prior_class_1 + prior_class_2*likelihood_class_2
+    # Evita division por cero
+    total[total==0] = 1
+    p_class_1 = prior_class_1*likelihood_class_1/total
+    p_class_2 = prior_class_2*likelihood_class_2/total
+    # Las indeterminadas en 0.5
+    p_class_1[total==1] = 0.5
+    p_class_2[total==1] = 0.5
+    return p_class_1, p_class_2
+
 def get_class_prob(x1_data, x2_data, joint_class_1, joint_class_2):
         prior_class_1 = joint_class_1.N/ (joint_class_1.N + joint_class_2.N)
         prior_class_2 = joint_class_2.N/ (joint_class_1.N + joint_class_2.N)
